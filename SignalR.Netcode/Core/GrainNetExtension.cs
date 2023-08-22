@@ -1,0 +1,43 @@
+﻿
+using Orleans;
+using Orleans.Netcode.Net;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Netcode.Orleans.Core
+{
+
+    public static class GrainSignalRExtensions
+    {
+        /// <summary>
+        /// Invokes a method on the hub.
+        /// </summary>
+        /// <param name="grain"></param>
+        /// <param name="methodName">Target method name to invoke.</param>
+        /// <param name="args">Arguments to pass to the target method.</param>
+        public static Task Send(this IHubMessageInvoker grain, string methodName, params object?[] args)
+        {
+            var invocationMessage = new InvocationMessage(methodName, args);
+            return grain.Send(invocationMessage);
+        }
+
+        /// <summary>
+        /// Invokes a method on the hub and ignores the Task.
+        /// Note: This is a fire-and-forget method. The Task will not be awaited and any exception will be swallowed.
+        /// </summary>
+        /// <param name="grain"></param>
+        /// <param name="methodName">Target method name to invoke.</param>
+        /// <param name="args">Arguments to pass to the target method.</param>
+        /// <returns></returns>
+        public static Task SendOneWay(this IHubMessageInvoker grain, string methodName, params object?[] args)
+        {
+            grain.SendOneWay(methodName, args).Ignore();
+
+            return Task.CompletedTask;
+        }
+    }
+
+}
