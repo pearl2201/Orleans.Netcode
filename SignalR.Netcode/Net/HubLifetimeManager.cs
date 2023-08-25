@@ -13,7 +13,7 @@ namespace Netcode.Orleans.Net
     /// <summary>
     /// A lifetime manager abstraction for <see cref="Hub"/> instances.
     /// </summary>
-    public abstract class HubLifetimeManager<IHub>
+    public abstract class HubLifetimeManager<IHub, THubConnectionContext> where THubConnectionContext:  HubConnectionContext
     {
         // Called by the framework and not something we'd cancel, so it doesn't take a cancellation token
         /// <summary>
@@ -21,7 +21,7 @@ namespace Netcode.Orleans.Net
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous connect.</returns>
-        public abstract Task OnConnectedAsync(HubConnectionContext connection);
+        public abstract Task OnConnectedAsync(THubConnectionContext connection);
 
         // Called by the framework and not something we'd cancel, so it doesn't take a cancellation token
         /// <summary>
@@ -29,7 +29,7 @@ namespace Netcode.Orleans.Net
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous disconnect.</returns>
-        public abstract Task OnDisconnectedAsync(HubConnectionContext connection);
+        public abstract Task OnDisconnectedAsync(THubConnectionContext connection);
 
         /// <summary>
         /// Sends an invocation message to all hub connections.

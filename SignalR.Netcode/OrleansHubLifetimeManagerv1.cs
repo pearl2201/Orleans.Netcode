@@ -15,23 +15,23 @@ namespace Netcode.Orleans
 {
 
     // TODO: Is this thing called in a threadsafe manner by signalR? 
-    public sealed class OrleansHubLifetimeManager<THub> : HubLifetimeManager<THub>, ILifecycleParticipant<ISiloLifecycle>,
-        IDisposable where THub : IHub
+    public sealed class OrleansHubLifetimeManagerv1<THub, THubConnectionContext> : HubLifetimeManager<THub, THubConnectionContext>, ILifecycleParticipant<ISiloLifecycle>,
+        IDisposable where THub : IHub where THubConnectionContext : HubConnectionContext
     {
         private readonly Guid _serverId;
         private readonly ILogger _logger;
         private readonly string _hubName;
         private readonly IClusterClient _clusterClient;
         private readonly SemaphoreSlim _streamSetupLock = new(1);
-        private readonly IHubConnectionStore _connections = new();
+        private readonly HubConnectionStore<THubConnectionContext> _connections = new();
 
         private IStreamProvider? _streamProvider;
         private IAsyncStream<ClientMessage> _serverStream = default!;
         private IAsyncStream<AllMessage> _allStream = default!;
         private Timer _timer = default!;
 
-        public OrleansHubLifetimeManager(
-            ILogger<OrleansHubLifetimeManager<THub>> logger,
+        public OrleansHubLifetimeManagerv1(
+            ILogger<OrleansHubLifetimeManagerv1<THub,THubConnectionContext>> logger,
             IClusterClient clusterClient
         )
         {
@@ -109,7 +109,7 @@ namespace Netcode.Orleans
             return connection == null ? Task.CompletedTask : SendLocal(connection, clientMessage.Message);
         }
 
-        public override async Task OnConnectedAsync(HubConnectionContext connection)
+        public override async Task OnConnectedAsync(THubConnectionContext connection)
         {
             await EnsureStreamSetup();
 
@@ -136,7 +136,7 @@ namespace Netcode.Orleans
             }
         }
 
-        public override async Task OnDisconnectedAsync(HubConnectionContext connection)
+        public override async Task OnDisconnectedAsync(THubConnectionContext connection)
         {
             try
             {
@@ -296,7 +296,7 @@ namespace Netcode.Orleans
         public void Participate(ISiloLifecycle lifecycle)
         {
             lifecycle.Subscribe(
-               observerName: nameof(OrleansHubLifetimeManager<THub>),
+               observerName: nameof(OrleansHubLifetimeManagerv1<THub, THubConnectionContext>),
                stage: ServiceLifecycleStage.Active,
                onStart: async cts => await Task.Run(EnsureStreamSetup, cts));
         }

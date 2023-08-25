@@ -11,6 +11,9 @@ namespace Orleans.Websocket.Sample
 {
     public class LaputaHub: WebSocketBehavior, IHub
     {
+        private readonly ILogger<LaputaHub> _logger;
+        private readonly IClusterClient _clusterClient;
+
         protected override void OnMessage(MessageEventArgs e)
         {
             var msg = e.Data == "BALUS"
@@ -18,6 +21,17 @@ namespace Orleans.Websocket.Sample
                       : "I'm not available now.";
 
             Send(msg);
+        }
+
+        protected override void OnOpen()
+        {
+            base.OnOpen();
+        }
+
+        protected override void OnClose(CloseEventArgs e)
+        {
+            base.OnClose(e);
+
         }
     }
 }

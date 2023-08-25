@@ -49,11 +49,20 @@ namespace WebSocketSharp.Server
       _creator = createSessionCreator (initializer);
     }
 
-    #endregion
+        internal WebSocketServiceHost(
+     string path, Action<WebSocketBehavior> initializer, Logger log
+   )
+     : base(path, log)
+        {
+            var _initializer = (Action<TBehavior>)initializer; 
+            _creator = createSessionCreator(_initializer);
+        }
 
-    #region Public Properties
+        #endregion
 
-    public override Type BehaviorType {
+        #region Public Properties
+
+        public override Type BehaviorType {
       get {
         return typeof (TBehavior);
       }

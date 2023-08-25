@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WebSocketSharp.Server;
 
 namespace Netcode.Orleans.Hosting
 {
@@ -24,14 +25,7 @@ namespace Netcode.Orleans.Hosting
             return builder.AddMemoryStreams(SignalROrleansConstants.SIGNALR_ORLEANS_STREAM_PROVIDER);
         }
 
-        public static IWebsocketServerBuilder AddWebsocket(this IServiceCollection services)
-        {
-
-            return new IWebsocketServerBuilder()
-            {
-                Services = services
-            };
-        }
+        
     }
 
 }

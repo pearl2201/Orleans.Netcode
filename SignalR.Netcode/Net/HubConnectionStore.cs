@@ -5,17 +5,17 @@ using System.Collections.Generic;
 
 namespace Netcode.Orleans.Net
 {
-    public class IHubConnectionStore
+    public class HubConnectionStore<THubConnectionContext> where THubConnectionContext: HubConnectionContext
     {
-        private readonly ConcurrentDictionary<string, HubConnectionContext> _connections =
-       new ConcurrentDictionary<string, HubConnectionContext>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, THubConnectionContext> _connections =
+       new ConcurrentDictionary<string, THubConnectionContext>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Get the <see cref="HubConnectionContext"/> by connection ID.
+        /// Get the <see cref="THubConnectionContext"/> by connection ID.
         /// </summary>
         /// <param name="connectionId">The ID of the connection.</param>
         /// <returns>The connection for the <paramref name="connectionId"/>, null if there is no connection.</returns>
-        public HubConnectionContext? this[string connectionId]
+        public THubConnectionContext? this[string connectionId]
         {
             get
             {
@@ -30,10 +30,10 @@ namespace Netcode.Orleans.Net
         public int Count => _connections.Count;
 
         /// <summary>
-        /// Add a <see cref="HubConnectionContext"/> to the store.
+        /// Add a <see cref="THubConnectionContext"/> to the store.
         /// </summary>
         /// <param name="connection">The connection to add.</param>
-        public void Add(HubConnectionContext connection)
+        public void Add(THubConnectionContext connection)
         {
             _connections.TryAdd(connection.ConnectionId, connection);
         }
@@ -42,7 +42,7 @@ namespace Netcode.Orleans.Net
         /// Removes a <see cref="HubConnectionContext"/> from the store.
         /// </summary>
         /// <param name="connection">The connection to remove.</param>
-        public void Remove(HubConnectionContext connection)
+        public void Remove(THubConnectionContext connection)
         {
             _connections.TryRemove(connection.ConnectionId, out _);
         }
@@ -59,15 +59,15 @@ namespace Netcode.Orleans.Net
         /// <summary>
         /// An <see cref="IEnumerator"/> over the <see cref="HubConnectionStore"/>
         /// </summary>
-        public readonly struct Enumerator : IEnumerator<HubConnectionContext>
+        public readonly struct Enumerator : IEnumerator<THubConnectionContext>
         {
-            private readonly IEnumerator<KeyValuePair<string, HubConnectionContext>> _enumerator;
+            private readonly IEnumerator<KeyValuePair<string, THubConnectionContext>> _enumerator;
 
             /// <summary>
             /// Constructs the <see cref="Enumerator"/> over the <see cref="HubConnectionStore"/>.
             /// </summary>
             /// <param name="hubConnectionList">The store of connections to enumerate over.</param>
-            public Enumerator(IHubConnectionStore hubConnectionList)
+            public Enumerator(HubConnectionStore<THubConnectionContext> hubConnectionList)
             {
                 _enumerator = hubConnectionList._connections.GetEnumerator();
             }
@@ -75,7 +75,7 @@ namespace Netcode.Orleans.Net
             /// <summary>
             /// The current connection the enumerator is on.
             /// </summary>
-            public HubConnectionContext Current => _enumerator.Current.Value;
+            public THubConnectionContext Current => _enumerator.Current.Value;
 
             object IEnumerator.Current => Current;
 

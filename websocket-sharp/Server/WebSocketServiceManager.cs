@@ -432,14 +432,133 @@ namespace WebSocketSharp.Server
       }
     }
 
-    /// <summary>
-    /// Removes all WebSocket services managed by the manager.
-    /// </summary>
-    /// <remarks>
-    /// Each service is stopped with close status 1001 (going away)
-    /// if the current state of the service is Start.
-    /// </remarks>
-    public void Clear ()
+
+        /// <summary>
+        /// Adds a WebSocket service with the specified behavior, path,
+        /// and initializer.
+        /// </summary>
+        /// <param name="path">
+        ///   <para>
+        ///   A <see cref="string"/> that specifies an absolute path to
+        ///   the service to add.
+        ///   </para>
+        ///   <para>
+        ///   / is trimmed from the end of the string if present.
+        ///   </para>
+        /// </param>
+        /// <param name="initializer">
+        ///   <para>
+        ///   An <see cref="T:System.Action{TBehavior}"/> delegate.
+        ///   </para>
+        ///   <para>
+        ///   The delegate invokes the method called when the service
+        ///   initializes a new session instance.
+        ///   </para>
+        ///   <para>
+        ///   <see langword="null"/> if not necessary.
+        ///   </para>
+        /// </param>
+        /// <typeparam name="TBehavior">
+        ///   <para>
+        ///   The type of the behavior for the service.
+        ///   </para>
+        ///   <para>
+        ///   It must inherit the <see cref="WebSocketBehavior"/> class.
+        ///   </para>
+        ///   <para>
+        ///   Also it must have a public parameterless constructor.
+        ///   </para>
+        /// </typeparam>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        ///   <para>
+        ///   <paramref name="path"/> is an empty string.
+        ///   </para>
+        ///   <para>
+        ///   -or-
+        ///   </para>
+        ///   <para>
+        ///   <paramref name="path"/> is not an absolute path.
+        ///   </para>
+        ///   <para>
+        ///   -or-
+        ///   </para>
+        ///   <para>
+        ///   <paramref name="path"/> includes either or both
+        ///   query and fragment components.
+        ///   </para>
+        ///   <para>
+        ///   -or-
+        ///   </para>
+        ///   <para>
+        ///   <paramref name="path"/> is already in use.
+        ///   </para>
+        /// </exception>
+        public void AddService(Type tBehavior,
+          string path, Action<WebSocketBehavior> initializer
+        )
+          
+        {
+            if (path == null)
+                throw new ArgumentNullException("path");
+
+            if (path.Length == 0)
+                throw new ArgumentException("An empty string.", "path");
+
+            if (path[0] != '/')
+            {
+                var msg = "Not an absolute path.";
+
+                throw new ArgumentException(msg, "path");
+            }
+
+            if (path.IndexOfAny(new[] { '?', '#' }) > -1)
+            {
+                var msg = "It includes either or both query and fragment components.";
+
+                throw new ArgumentException(msg, "path");
+            }
+
+            path = path.TrimSlashFromEnd();
+
+            lock (_sync)
+            {
+                WebSocketServiceHost host;
+
+                if (_hosts.TryGetValue(path, out host))
+                {
+                    var msg = "It is already in use.";
+
+                    throw new ArgumentException(msg, "path");
+                }
+
+                //host = new WebSocketServiceHost<TBehavior>(path, initializer, _log);
+                var type = typeof(WebSocketServiceHost<>).MakeGenericType(tBehavior);
+                 host = (WebSocketServiceHost)Activator.CreateInstance(type, path, initializer, _log);
+
+                if (!_keepClean)
+                    host.KeepClean = false;
+
+                if (_waitTime != host.WaitTime)
+                    host.WaitTime = _waitTime;
+
+                if (_state == ServerState.Start)
+                    host.Start();
+
+                _hosts.Add(path, host);
+            }
+        }
+
+        /// <summary>
+        /// Removes all WebSocket services managed by the manager.
+        /// </summary>
+        /// <remarks>
+        /// Each service is stopped with close status 1001 (going away)
+        /// if the current state of the service is Start.
+        /// </remarks>
+        public void Clear ()
     {
       List<WebSocketServiceHost> hosts = null;
 
