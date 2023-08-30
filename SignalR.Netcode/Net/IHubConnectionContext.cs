@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 
 namespace Netcode.Orleans.Net
 {
-    public abstract class HubConnectionContext
+    public interface IHubConnectionContext
     {
         public string ConnectionId { get; set; }
 
-        public CancellationTokenSource ConnectionAborted { get; set; }
+        public CancellationToken ConnectionAborted { get; set; }
 
-        public abstract Task WriteAsync(InvocationMessage message);
+        public Task WriteAsync(InvocationMessage message);
 
         public bool IsAuthenticated { get; set; }
 

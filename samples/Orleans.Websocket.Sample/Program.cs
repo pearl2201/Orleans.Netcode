@@ -1,26 +1,57 @@
 using Netcode.Orleans.Net;
 using Netcode.Orleans.Hosting;
 using Orleans.Websocket.Sample;
+using Orleans.Websocket;
+using Orleans.Websocket.Net;
+using Netcode.Orleans;
+using Orleans.Hosting;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .UseOrleans(siloBuilder =>
+var hostBuilder = Host.CreateDefaultBuilder(args);
+if (int.Parse(args[0]) == 0)
+{
+    hostBuilder.UseOrleans(siloBuilder =>
     {
-        siloBuilder.UseLocalhostClustering();
-        siloBuilder.UseSignalR(); // Adds ability #1 and #2 to Orleans.
-        siloBuilder.RegisterHub<LaputaHub>(); // Required for each hub type if the backplane ability #1 is being used.
-    })
-    .ConfigureServices(services =>
+        siloBuilder.UseLocalhostClustering()
+        .UseSignalR();
+
+        siloBuilder.RegisterHub<LaputaHub, WebsocketHubConnectionContext>(); // Required for each hub type if the backplane ability #1 is being used.
+    });
+}
+else
+{
+    hostBuilder.UseOrleansClient(clientBuilder =>
     {
+        clientBuilder.UseLocalhostClustering()
+       .UseWebsocket((a) =>
+       {
+
+       });
+    });
+}
+
+
+hostBuilder
+.ConfigureServices(services =>
+{
 
 
 
-        services
-        .AddWebsocket()
-             // Adds SignalR hubs to the web application
-            .AddOrleans();
+    services
+    .AddWebsocket((cfg) =>
+    {
+        cfg.Port = int.Parse(args[1]);
+        cfg.AddHub<LaputaHub>("/laputa", (host) =>
+        {
 
+        });
 
     })
-    .Build();
+        // Adds SignalR hubs to the web application
+        .AddOrleans<LaputaHub>();
+
+
+});
+
+IHost host = hostBuilder.Build();
 //app.MapHub<MyHub>("/myhub");
 host.Run();

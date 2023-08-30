@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Netcode.Orleans.Net
 {
-    public class HubConnectionStore<THubConnectionContext> where THubConnectionContext: HubConnectionContext
+    public class HubConnectionStore<THubConnectionContext> where THubConnectionContext: IHubConnectionContext
     {
         private readonly ConcurrentDictionary<string, THubConnectionContext> _connections =
        new ConcurrentDictionary<string, THubConnectionContext>(StringComparer.Ordinal);
@@ -39,7 +39,7 @@ namespace Netcode.Orleans.Net
         }
 
         /// <summary>
-        /// Removes a <see cref="HubConnectionContext"/> from the store.
+        /// Removes a <see cref="IHubConnectionContext"/> from the store.
         /// </summary>
         /// <param name="connection">The connection to remove.</param>
         public void Remove(THubConnectionContext connection)

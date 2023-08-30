@@ -13,7 +13,7 @@ namespace Netcode.Orleans.Net
     /// <summary>
     /// A lifetime manager abstraction for <see cref="Hub"/> instances.
     /// </summary>
-    public abstract class HubLifetimeManager<IHub, THubConnectionContext> where THubConnectionContext:  HubConnectionContext
+    public abstract class HubLifetimeManager<IHub, THubConnectionContext> where THubConnectionContext:  IHubConnectionContext
     {
         // Called by the framework and not something we'd cancel, so it doesn't take a cancellation token
         /// <summary>

@@ -2,14 +2,14 @@
   "profiles": {
     "Orleans.Websocket.Sample": {
       "commandName": "Project",
+      "commandLineArgs": "0 7777",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
     },
     "Docker": {
-      "commandName": "Docker",
-      "environmentVariables": {}
+      "commandName": "Docker"
     }
   }
 }

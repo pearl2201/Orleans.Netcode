@@ -1,29 +1,43 @@
 ﻿using System;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Orleans.Websocket.Config;
+using WebSocketSharp;
 using WebSocketSharp.Server;
 
 namespace Orleans.Websocket
 {
-	public class WebSocketHostedService: IHostedService
-	{
+    public class WebSocketHostedService : IHostedService
+    {
+        private readonly ILogger<WebSocketHostedService> _logger;   
         private readonly WebSocketServer _socketServer;
-		public WebSocketHostedService(IOptions<WebsocketServerHubOptions> serverHubOptions)
-		{
-            _socketServer = new WebSocketServer(serverHubOptions.Value.Port);
-            serverHubOptions.Value.Configure.Invoke(_socketServer);
-            foreach(var kv in serverHubOptions.Value.hubMap)
+        private readonly IServiceProvider _serviceProvider;
+
+        public WebSocketServer WSS
+        {
+            get
             {
-                Type tBehaviour = kv.Value;
-            var typeActionBehaviour = typeof(Action<>).MakeGenericType(tBehaviour);
-                var action = 
-                typeof(WebSocketServer)
-        .GetMethod("AddWebSocketService", new Type[] { typeof(string), typeof(string) })
-        .MakeGenericMethod(tBehaviour)
-        .Invoke(this, new object[] { kv.Key,  });
+                return _socketServer;
             }
-            
+        }
+
+        public IServiceProvider ServiceProvider
+        {
+            get
+            {
+                return _serviceProvider;
+            }
+        }
+        public WebSocketHostedService(ILogger<WebSocketHostedService> logger, IOptions<WebsocketServerHubOptions> serverHubOptions, IServiceProvider serviceProvider)
+        {
+            _logger = logger;
+            _socketServer = new WebSocketServer(serverHubOptions.Value.Port);
+            _serviceProvider = serviceProvider;
+            foreach (var act in serverHubOptions.Value.Configure)
+            {
+                act(this);
+            }
         }
 
 
@@ -32,6 +46,7 @@ namespace Orleans.Websocket
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("[******] Start websocket server at port: " + _socketServer.Port);
             _socketServer.Start();
             while (!cancellationToken.IsCancellationRequested)
             {

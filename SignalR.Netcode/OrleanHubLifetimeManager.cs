@@ -13,8 +13,8 @@ using Orleans.Netcode.Net;
 
 namespace Orleans.Netcode
 {
-    public sealed class OrleansHubLifetimeManager<THub, THubConnectionContext> : IHubLifetimeManager, ILifecycleParticipant<ISiloLifecycle>,
-       IDisposable where THub : IHub where THubConnectionContext : HubConnectionContext
+    public class OrleansHubLifetimeManager<THub, THubConnectionContext> : IHubLifetimeManager<THub, THubConnectionContext>, ILifecycleParticipant<ISiloLifecycle>,
+       IDisposable where THub : IHub where THubConnectionContext : IHubConnectionContext
     {
         private readonly Guid _serverId;
         private readonly ILogger _logger;
@@ -29,7 +29,7 @@ namespace Orleans.Netcode
         private Timer _timer = default!;
 
         public OrleansHubLifetimeManager(
-            ILogger<OrleansHubLifetimeManagerv1<THub, THubConnectionContext>> logger,
+            ILogger<OrleansHubLifetimeManager<THub, THubConnectionContext>> logger,
             IClusterClient clusterClient
         )
         {
@@ -134,7 +134,7 @@ namespace Orleans.Netcode
             }
         }
 
-        private Task SendLocal(HubConnectionContext connection, InvocationMessage hubMessage)
+        private Task SendLocal(IHubConnectionContext connection, InvocationMessage hubMessage)
         {
             _logger.LogDebug(
                 "Sending local message to connection {connectionId} on hub {hubName} (serverId: {serverId})",
@@ -162,7 +162,7 @@ namespace Orleans.Netcode
         public void Participate(ISiloLifecycle lifecycle)
         {
             lifecycle.Subscribe(
-                   observerName: nameof(OrleansHubLifetimeManagerv1<THub, THubConnectionContext>),
+                   observerName: nameof(OrleansHubLifetimeManager<THub, THubConnectionContext>),
                    stage: ServiceLifecycleStage.Active,
                    onStart: async cts => await Task.Run(EnsureStreamSetup, cts));
         }

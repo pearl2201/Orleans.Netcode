@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-Orleans.Websocket.Sample-ae172fed-fa3b-4d21-9bde-e2b6a8b2ab5e</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>

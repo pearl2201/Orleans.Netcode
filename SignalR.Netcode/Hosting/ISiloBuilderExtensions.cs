@@ -3,6 +3,7 @@ using Netcode.Orleans.Config;
 using Netcode.Orleans.Net;
 using Orleans;
 using Orleans.Hosting;
+using Orleans.Netcode;
 using Orleans.Runtime;
 using System;
 using System.Collections.Generic;
@@ -44,12 +45,12 @@ namespace Netcode.Orleans.Hosting
             return builder;
         }
 
-        public static ISiloBuilder RegisterHub<THub>(this ISiloBuilder builder) where THub : IHub
+        public static ISiloBuilder RegisterHub<THub, THubConnectionContext>(this ISiloBuilder builder) where THub : IHub where THubConnectionContext : IHubConnectionContext
         {
             builder.ConfigureServices(services =>
             {
                 services.AddTransient<ILifecycleParticipant<ISiloLifecycle>>(sp =>
-                    (sp.GetRequiredService<HubLifetimeManager<THub>>() as ILifecycleParticipant<ISiloLifecycle>)!);
+                    (sp.GetRequiredService<IHubLifetimeManager<THub, THubConnectionContext>>() as ILifecycleParticipant<ISiloLifecycle>)!);
             });
 
             return builder;
